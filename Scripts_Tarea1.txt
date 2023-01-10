@@ -1,0 +1,114 @@
+
+CLAUSULA HAVING
+ 
+1.-Mostrar el nombre de los benefciarios que tienen mas de 36 meses  de deuda en estado vigente  despues de haber adquirido un servcicio. 
+
+select be.beneficiarioNombre,sum(am.AmortizacionNumeroTotalPagos) as MesesDeuda, pa.ParametroStatus
+from parametro as pa 
+inner join amortizacion as am on pa.ParametroId = am.ParametroId
+inner join beneficiario as be on am.BeneficiarioId=be.BeneficiarioId
+where pa.ParametroStatus like "Vigente"
+group by be.beneficiarioNombre
+having MesesDeuda>36
+
+2.- Visualizar el total de  los servicios de tipo "transacciones " realizadas  por empleados con rol de "gerente"
+
+select rol.RolNombre,ser.ServicioNombre,count(ser.ServicioNombre) as TotalServicio
+from Rol 
+inner join posee on rol.rolId= posee.RolId
+inner join empleado as em on posee.empleadoId= em.empleadoId
+inner join servicio as ser on em.empleadoId= ser.empleadoId
+where ser.ServicioNombre like "Transacciones"  and rolNombre like "Gerente"
+group by ser.ServicioNombre
+having count(ser.ServicioNombre) 
+
+3.-Cuantos empleados pertenencen a una agencia ubicada en la provincia de "Loja ",realizan servicios de tipo "Debito" y  se encuentran  en estado inactivo
+
+Select pro.ProvinciaNombre,ser.ServicioTipo, em.EmpleadoEstado , sum(em.EmpleadoId)
+from empleado as em 
+inner join servicio as ser on em.EmpleadoId=ser.EmpleadoId
+inner join Agencia as ag on ser.AgenciaId= ag.AgenciaId
+inner join Provincia as pro on ag.ProvinciaId= pro.ProvinciaId
+where pro.ProvinciaNombre like "Loja" and ser.ServicioTipo like "Debito" and em.EmpleadoEstado like "Inactivo"
+group by em.EmpleadoId
+having  sum(em.EmpleadoId)
+
+CLAUSULA GROUP BY 
+
+4.-Mostrar el total de proyectos aceptados por el genero  del  beneficiario
+
+select be.beneficiariogenero as genero, count(BeneficiarioId) as TotalBeneficiarios, pro.ProyectoStatus  as Proyectos 
+from Proyecto as pro 
+inner join beneficiario as be on pro.proyectoId= be.proyectoId
+inner join provincia as p  on be.ProvinciaId= p.ProvinciaId
+where pro.ProyectoStatus like "Aceptado" 
+group by be.beneficiariogenero
+
+
+5.-Cuantos beneficiarios mayores a los 40 años presentraron como tipo de proyecto  destinado a Economia y ademas pertenecen a la provinvia de Azuay
+
+select be.BeneficiarioNombre, be.BeneficiarioEdad, pro.ProyectoTipo ,  pr.ProvinciaNombre
+from Proyecto as pro
+inner join beneficiario as be  on pro.ProyectoId = be.ProyectoId
+inner join Provincia as pr on  be.ProvinciaId = pr.ProvinciaId
+
+where  be.BeneficiarioEdad >40 and pro.ProyectoTipo  like "Economico" and  pr.ProvinciaNombre like "Azuay"
+group by be.BeneficiarioNombre
+
+6.-Mostrar el total de Servicios en espera  por el genero de los empleados además que sean parte de una agenca en estado activo
+
+Select em.empleadogenero ,ser.servicioestado,ag.AgenciaEstado
+from Empleado as em 
+inner join servicio as ser on em.EmpleadoId= ser-EmpleadoId
+inner join Agencia as ag on  ser.AgenciaId=ag.AgenciaId
+where  ser.servicioestado like "En Espera" and ag.AgenciaEstado like "Activo"
+group by em.empleadogenero 
+
+
+FUNCIONES DE AGRUPACION
+
+
+7.-SE desea conocer el nombre de los beneficiarios de la provincia del Guayas que realizaron un proyecto de tipo Emprendimiento y que tengan de stado "aceptado"
+
+Select ROW_NUMBER() OVER(ORDER BY be.beneficiarioNombre) as Cantidad , Be.BeneficiarioNombre,pro.ProvinciaNombre, p.ProyectoTipo,  p.ProyectoStatus
+from provincia as pro 
+inner join beneficiario as be on pro.ProvinciaId = be.ProvinciaId
+inner join proyecto as p on be.ProyectoId = p.ProyectoId
+where pro.ProvinciaNombre like "Guayas" and p.ProyectoTipo like "Emprendimiento" and  p.ProyectoStatus like "Aceptado"
+
+8.- Cuantos servicios de tipo Credito fueron creados por una agencia en la provincia de  zamora 
+
+select count(ser.servicioTipo),  ag.AgenciaNombre, pro.ProvinciaNombre
+from Provincia as pro 
+inner join Agencia as ag on pro.ProvinciaId= ag.ProvinciaId
+inner join Servicio as ser on ag.AgenciaId= ser.AgenciaId
+where ser.servicioTipo like "Credito" and pro.provinciaNombre like "Azuay"
+
+
+CONSULTAS A MI ELECCION 
+9.-Conocer la canridad de beneficiario con 42 años
+select distinct count(BeneficiarioEdad) as Total, BeneficiarioEdad , AmortizacionTipoInteresPeriodico
+from beneficiario as be 
+inner join amortizacion as am on be.beneficiarioId= am.beneficiarioId
+inner join parametro as pa on am.parametroId= pa.Parametro
+where  beneficiarioEdad = 42
+group AmortizacionTipoInteresPeriodico
+
+10.-Sumar todos los generos de los beneficiarios , contar  los id de los beneficiarios mostrar lel estado del los proyectos rechazados 
+
+
+select sum(be.beneficiariogenero as genero), count(BeneficiarioId) as TotalBeneficiarios, pro.ProyectoStatus  as Proyectos 
+from Proyecto as pro 
+inner join beneficiario as be on pro.proyectoId= be.proyectoId
+inner join provincia as p  on be.ProvinciaId= p.ProvinciaId
+where pro.ProyectoStatus like "Rechazado" 
+group by sum(be.beneficiariogenero)
+ 
+
+5.-Beneficiarios que sean del canton "Guayaquil" y  que su proyecto hay sido aceptado
+
+
+
+
+6.- listar los roles de los empleados que 
+
