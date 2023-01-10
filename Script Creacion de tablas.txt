@@ -1,0 +1,195 @@
+create table Empleado(
+EmpleadoId text PRIMARY KEY NOT NULL UNIQUE,
+EmpleadoNombre TEXT NOT NULL,
+EmpleadoGenero text NOT NULL,
+EmpleadoDescripcion TEXT NOT NULL,
+EmpleadoFechaNacimiento TEXT NOT NULL,
+EmpleadoEdad text NOT NULL,
+EmpleadoEstado TEXT NOT NULL
+);
+
+create table Provincia (
+ProvinciaId TEXT PRIMARY KEY  NOT NULL UNIQUE,
+ProvinciaNombre TEXT NOT NULL,
+ProvinciaStatus TEXT NOT NULL
+);
+
+create table Canton (
+CantonId TEXT PRIMARY KEY NOT NULL UNIQUE ,
+CantonNombre TEXT NOT NULL,
+CantonStatus TEXT NOT NULL,
+ProvinciaId TEXT NOT NULL UNIQUE,
+FOREIGN KEY (ProvinciaId) REFERENCES Provincia(ProvinciaId)
+);
+
+CREATE TABLE Parroquia (
+ParroquiaId TEXT NOT NULL UNIQUE,
+ParroquiaNombre TEXT  NOT NULL,
+ParroquiaStatus TEXT  NOT NULL,
+ProvinciaId TEXT  NOT NULL UNIQUE,
+CantonId TEXT  NOT NULL UNIQUE,
+CONSTRAINT pk_Parroquia PRIMARY KEY (ParroquiaId),
+FOREIGN KEY (ProvinciaId) REFERENCES Provincia(ProvinciaId),
+FOREIGN KEY (CantonId) REFERENCES Canton(CantonId)
+);
+
+create table Agencia (
+AgenciaId TEXT NOT NULL UNIQUE,
+AgenciaNombre TEXT  NOT NULL,
+AgenciaEstado TEXT  NOT NULL,
+AgenciaTelefono TEXT  NOT NULL,
+AgenciaCorreo TEXT  NOT NULL,
+ProvinciaId TEXT  NOT NULL,
+CantonId TEXT  NOT NULL,
+ParroquiaId TEXT  NOT NULL,
+CONSTRAINT pk_Agencia PRIMARY KEY (AgenciaId),
+FOREIGN KEY (ProvinciaId) REFERENCES Provincia(ProvinciaId),
+FOREIGN KEY (CantonId) REFERENCES Canton(CantonId),
+FOREIGN KEY (ParroquiaId) REFERENCES Parroquia(ParroquiaId)
+);
+
+create table Rol(
+RolId TEXT  NOT NULL UNIQUE,
+RolNombre TEXT  NOT NULL,
+RolDescripcion TEXT  NOT NULL,
+CONSTRAINT pk_Rol PRIMARY KEY (RolId)
+);
+
+create table Posee (
+EmpleadoId TEXT NOT NULL UNIQUE,
+RolId TEXT NOT NULL UNIQUE,
+CONSTRAINT pk_Posee PRIMARY KEY (EmpleadoId, RolId),
+FOREIGN KEY (EmpleadoId) REFERENCES Empleado(EmpleadoId),
+FOREIGN KEY (RolId) REFERENCES Rol(RolId)
+);
+
+
+
+create table Permiso (
+PermisoId text NOT NULL UNIQUE,
+PermisoNombre text  NOT NULL,
+PermisoDescripcion text NOT NULL,
+CONSTRAINT pk_Permiso PRIMARY KEY (PermisoId)
+);
+
+create table EmpleadoRolPermiso (
+EmpleadoId text NOT NULL UNIQUE,
+RolId text NOT NULL UNIQUE,
+PermisoId text NOT NULL UNIQUE,
+CONSTRAINT pk_EmpleadoRolPermiso PRIMARY KEY (EmpleadoId, RolId, PermisoId),
+FOREIGN KEY (EmpleadoId) REFERENCES Empleado(EmpleadoId),
+FOREIGN KEY (RolId) REFERENCES Rol(RolId),
+FOREIGN KEY (PermisoId) REFERENCES Permiso(PermisoId)
+);
+
+create table Servicio (
+ServicioId text NOT NULL UNIQUE,
+ServicioNombre text NOT NULL,
+ServicioDescripcion text NOT NULL,
+ServicioEstado text NOT NULL,
+ServicioTipo text NOT NULL,
+ServicioMonto text NOT NULL,
+ServicioTiempo text NOT NULL,
+EmpleadoId text NOT NULL UNIQUE,
+AgenciaId text NOT NULL UNIQUE,
+CONSTRAINT pk_Servicio PRIMARY KEY (ServicioId),
+FOREIGN KEY (EmpleadoId) REFERENCES Empleado(EmpleadoId),
+FOREIGN KEY (AgenciaId) REFERENCES Agencia(AgenciaId)
+);
+
+create table Parametro (
+ParametroId text NOT NULL UNIQUE,
+ParametroNombre text NOT NULL,
+ParametroDescripcion text NOT NULL,
+ParametroBaseLegal text NOT NULL,
+ParametroStatus text NOT NULL,
+ParametroFechaDeclaracion text NOT NULL,
+ParametroFechaDerogacion text NOT NULL,
+ServicioId text NOT NULL UNIQUE,
+CONSTRAINT pk_Parametro PRIMARY KEY (ParametroId),
+FOREIGN KEY (ServicioId) REFERENCES Servicio(ServicioId)
+);
+
+create table Deriva (
+ServicioId text NOT NULL UNIQUE,
+ParametroId text NOT NULL UNIQUE,
+CONSTRAINT pk_Deriva PRIMARY KEY(ServicioId, ParametroId),
+FOREIGN KEY (ServicioId) REFERENCES Servicio(ServicioId),
+FOREIGN KEY (ParametroId) REFERENCES Parametro(ParametroId)
+);
+
+create table Proyecto(
+ProyectoId text NOT NULL UNIQUE,
+ProyectoNombre text NOT NULL,
+ProyectoTipo text NOT NULL,
+ProyectoStatus text NOT NULL,
+CONSTRAINT pk_Proyecto PRIMARY KEY (ProyectoId)
+);
+
+
+create table Beneficiario (
+BeneficiarioId TEXT NOT NULL UNIQUE,
+BeneficiarioGenero TEXT NOT NULL,
+BeneficiarioNombre TEXT NOT NULL,
+BeneficiarioFechaNacimiento text NOT NULL,
+BeneficiarioEdad TEXT NOT NULL,
+ProvinciaId TEXT NOT NULL,
+CantonId TEXT NOT NULL,
+ParroquiaId TEXT NOT NULL,
+ProyectoId TEXT NOT NULL,
+CONSTRAINT pk_Beneficiario PRIMARY KEY (BeneficiarioId),
+FOREIGN KEY (ProyectoId) REFERENCES Proyecto(ProyectoId),
+FOREIGN KEY (ProvinciaId) REFERENCES Provincia(ProvinciaId),
+FOREIGN KEY (CantonId) REFERENCES Canton(CantonId),
+FOREIGN KEY (ParroquiaId) REFERENCES Parroquia(ParroquiaId)
+);
+
+create table Recibe (
+BeneficiarioId text NOT NULL UNIQUE,
+ParametroId text NOT NULL UNIQUE,
+ServicioId text NOT NULL UNIQUE,
+CONSTRAINT pk_Recibe PRIMARY KEY (BeneficiarioId, ParametroId, ServicioId),
+FOREIGN KEY (ServicioId) REFERENCES Servicio(ServicioId),
+FOREIGN KEY (ParametroId) REFERENCES Parametro(ParametroId),
+FOREIGN KEY (BeneficiarioId) REFERENCES Beneficiario(BeneficiarioId)
+);
+
+
+create table Amortizacion (
+AmortizacionId text NOT NULL UNIQUE,
+ServicioId text NOT NULL UNIQUE,
+ParametroId text NOT NULL UNIQUE,
+BeneficiarioId text NOT NULL UNIQUE,
+AmortizacionFechaTransaccion text NOT NULL,
+AmortizacionPagoPeriodico text NOT NULL,
+AmortizacionCapital text NOT NULL,
+AmortizacionTipoInteresPeriodico text NOT NULL,
+AmortizacionNumeroTotalPagos text NOT NULL,
+CONSTRAINT pk_Amortizacion PRIMARY KEY (AmortizacionId),
+FOREIGN KEY (ServicioId) REFERENCES Servicio(ServicioId),
+FOREIGN KEY (ParametroId) REFERENCES Parametro(ParametroId),
+FOREIGN KEY (BeneficiarioId) REFERENCES Beneficiario(BeneficiarioId)
+);
+
+IMPORTACION DE LOS DATOS CSV
+.import C:\\src\\sqlite\\db\\Datos\\Agencias.csv Agencia
+.import C:\\src\\sqlite\\db\\Datos\\Armortizacion.csv Amortizacion
+.import C:\\src\\sqlite\\db\\Datos\\Beneficiario.csv Beneficiario
+.import C:\\src\\sqlite\\db\\Datos\\Canton.csv Canton
+.import C:\\src\\sqlite\\db\\Datos\\Deriva.csv Deriva
+.import C:\\src\\sqlite\\db\\Datos\\EmpleadoRolPermiso.csv EmpleadoRolPermiso
+.import C:\\src\\sqlite\\db\\Datos\\Empleados.csv Empleado
+.import C:\\src\\sqlite\\db\\Datos\\Parametros.csv Parametro
+.import C:\\src\\sqlite\\db\\Datos\\Parroquia.csv Parroquia
+.import C:\\src\\sqlite\\db\\Datos\\Permiso.csv Permiso
+.import C:\\src\\sqlite\\db\\Datos\\Posee.csv Posee
+.import C:\\src\\sqlite\\db\\Datos\\Provincia.csv Provincia
+.import C:\\src\\sqlite\\db\\Datos\\Proyectos.csv Proyecto
+.import C:\\src\\sqlite\\db\\Datos\\Recibe.csv Recibe
+.import C:\\src\\sqlite\\db\\Datos\\Rol.csv Rol
+.import C:\\src\\sqlite\\db\\Datos\\Servicios.csv Servicio
+
+
+
+
+
